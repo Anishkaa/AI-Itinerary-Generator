@@ -1,0 +1,143 @@
+* {
+    margin: 0;
+    padding: 0;
+   
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Orbitron;
+    justify-content: center;
+    background-color: #FEF3E2;
+    background-image: url(./newbg.webp);
+    background-size: cover;
+}
+
+nav {
+    position: fixed;
+    top: 0;
+    margin-top: 10px;
+    background-color: #db4b6f;
+    border-radius: 20px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    box-shadow: 7px 7px 0 black;
+    transition: font-size 0.5s ease;
+}
+
+nav:hover {
+    font-size: large;
+    transition: font-size 0.5s ease;
+}
+
+h1 {
+    margin-top: 10px;
+    justify-content: left;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    min-width: 400px;
+}
+
+label {
+    margin-top: 10px;
+    margin-bottom: 2px;
+}
+
+option, select {
+    border-radius: 4px;
+    border-width: 0px;
+    font-family: Orbitron;
+    height: 25px;
+}
+
+input {
+    border-radius: 4px;
+    font-family: Orbitron;
+    border-width: 0px;
+    height: 25px;
+    padding-left: 5px;
+}
+
+button {
+    margin-top: 20px;
+    border-radius: 10px;
+    font-family: Orbitron;
+    border-width: 2px; 
+    padding: 7px;
+    font-size: small;
+}
+button:hover {
+    background-color: black;
+    color:  #db4b6f;
+    transition: 0.15s;
+}
+button:active {
+    box-shadow: 4px 4px 0 rgba(0, 0, 0);
+}
+
+.form-div {
+    background-color: #db4b6f;
+    padding-top: 20px;
+    padding-bottom: 30px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 20px;
+    margin-top: 25vh;
+    box-shadow: 10px 10px 0 rgba(0, 0, 0);
+}
+
+#output {
+    margin-top: 20px;
+    background-color: #131312;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 10px;
+    min-width: 650px;
+    max-width: 650px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: black;
+    color: #db4b6f;
+    margin-top: 20px;
+    font-size: 10px;
+    padding-left: 20px;
+    padding-top: 7px;
+}
+
+
+.copyrights {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+    font-size: smaller;
+}
+
+@media (max-width: 400px) {
+    .form-div {
+        width: 300px;
+    }   
+    form {
+        min-width: 300px;
+    } 
+}
+
+@media (min-width: 401px) and (max-width: 500px) {
+    .form-div {
+        width: 300px;
+    }   
+    form {
+        min-width: 300px;
+    } 
+}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Limelight&family=Orbitron:wght@400..900&display=swap"
+        rel="stylesheet">
+    <title>Travel Itinerary Planner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+
+<body>
+    <nav>
+        <h1>ItineraryPlanner.ai</h1>
+    </nav>
+    <div class="form-div">
+        <form id="itinerary-form">
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" placeholder="Enter your destination here" required>
+
+            <label for="start-date">Start Date:</label>
+            <input type="date" id="start-date" name="start-date" required>
+
+            <label for="end-date">End Date:</label>
+            <input type="date" id="end-date" name="end-date" required>
+
+            <label for="travel-type">Travel Type:</label>
+            <select id="travel-type" name="travel-type" required>
+                <option disabled selected value>-- select an option --</option>
+                <option value="leisure">Leisure</option>
+                <option value="adventure">Adventure</option>
+                <option value="cultural">Cultural</option>
+                <option value="business">Business</option>
+            </select>
+
+            <button type="submit">Generate Itinerary</button>
+        </form>
+    </div>
+
+
+    <div id="output"></div>
+
+    <footer>
+        <p class="copyrights">© 2024 Anishka Chauhan. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const form = document.getElementById("itinerary-form");
+        const outputDiv = document.getElementById("output");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const formData = {
+                location: document.getElementById("location").value,
+                startDate: document.getElementById("start-date").value,
+                endDate: document.getElementById("end-date").value,
+                travelType: document.getElementById("travel-type").value,
+            };
+
+            try {
+                const response = await fetch("/generate-itinerary", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData),
+                });
+
+                const result = await response.json();
+                if (result.itinerary) {
+                    outputDiv.innerHTML = result.itinerary;
+                } else {
+                    outputDiv.innerHTML = `<p style="color: red;">${result.error}</p>`;
+                }
+            } catch (error) {
+                outputDiv.innerHTML = `<p style="color: red;">Error fetching itinerary. Please try again.</p>`;
+            }
+        });
+    </script>
+</body>
+
+</html>
