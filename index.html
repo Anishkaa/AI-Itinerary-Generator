@@ -40,6 +40,10 @@
         </form>
     </div>
 
+    <div id="loading" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Generating your personalized itinerary...</p>
+    </div>
 
     <div id="output"></div>
 
@@ -48,11 +52,19 @@
     </footer>
 
     <script>
+        // Replace with your Render deployment URL
+        const BACKEND_URL = 'https://ai-itinerary-generator.onrender.com';
+        
         const form = document.getElementById("itinerary-form");
         const outputDiv = document.getElementById("output");
+        const loadingDiv = document.getElementById("loading");
 
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
+            
+            // Show loading indicator
+            loadingDiv.style.display = "flex";
+            outputDiv.innerHTML = "";
 
             const formData = {
                 location: document.getElementById("location").value,
@@ -62,23 +74,108 @@
             };
 
             try {
-                const response = await fetch("/generate-itinerary", {
+                const response = await fetch(`${BACKEND_URL}/generate-itinerary`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     body: JSON.stringify(formData),
                 });
 
                 const result = await response.json();
+                
+                // Hide loading indicator
+                loadingDiv.style.display = "none";
+
                 if (result.itinerary) {
                     outputDiv.innerHTML = result.itinerary;
+                    // Scroll to result
+                    outputDiv.scrollIntoView({ behavior: 'smooth' });
                 } else {
-                    outputDiv.innerHTML = `<p style="color: red;">${result.error}</p>`;
+                    outputDiv.innerHTML = `
+                        <div class="error-message">
+                            <p>${result.error || 'Error generating itinerary'}</p>
+                        </div>
+                    `;
                 }
             } catch (error) {
-                outputDiv.innerHTML = `<p style="color: red;">Error fetching itinerary. Please try again.</p>`;
+                // Hide loading indicator
+                loadingDiv.style.display = "none";
+                
+                outputDiv.innerHTML = `
+                    <div class="error-message">
+                        <p>Error connecting to server. Please try again later.</p>
+                    </div>
+                `;
             }
         });
+
+        // Add date validation
+        const startDateInput = document.getElementById("start-date");
+        const endDateInput = document.getElementById("end-date");
+
+        startDateInput.addEventListener("change", () => {
+            endDateInput.min = startDateInput.value;
+        });
+
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        startDateInput.min = today;
+        endDateInput.min = today;
     </script>
+
+    <style>
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            color: #666;
+        }
+
+        .error-message {
+            background-color: #fee;
+            border: 1px solid #fcc;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+            color: #c00;
+            text-align: center;
+        }
+
+        /* Additional responsive styles */
+        @media (max-width: 768px) {
+            .form-div {
+                padding: 15px;
+            }
+
+            form {
+                width: 100%;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
 </body>
 
 </html>
