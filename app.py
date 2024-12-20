@@ -4,9 +4,10 @@ from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
 from langchain_huggingface import HuggingFaceEndpoint
 from datetime import datetime, timedelta
+from flask_cors import CORS
 
-load_dotenv()
 app = Flask(__name__)
+CORS(app)
 
 # HuggingFace LLM configuration
 HF_TOKEN = os.getenv("HF_TOKEN")  # Ensure this environment variable is set
@@ -145,4 +146,4 @@ def generate_itinerary():
         }), 500
 
 if __name__ == "__main__":
-    app.run(debug=False, host='0.0.0.0')
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
