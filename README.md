@@ -4,8 +4,8 @@ An intelligent travel itinerary generator that creates personalized day-by-day t
 
 ## 🚀 Live Application
 
-Visit the live application: [AI Itinerary Generator](https://your-github-pages-url.com)
-live on render:( [https://ai-itinerary-generator.onrender.com/] )
+- Visit the live application: [AI Itinerary Generator](https://your-github-pages-url.com)
+- live on render:( [Application Live on Render](https://ai-itinerary-generator.onrender.com/) )
 
 ## 🌟 Features
 
