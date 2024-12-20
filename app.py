@@ -1,22 +1,32 @@
+
 import os
 from flask import Flask, request, jsonify, render_template
+from dotenv import load_dotenv
 from langchain_huggingface import HuggingFaceEndpoint
 from datetime import datetime, timedelta
 
+load_dotenv()
 app = Flask(__name__)
 
 # HuggingFace LLM configuration
 HF_TOKEN = os.getenv("HF_TOKEN")  # Ensure this environment variable is set
 if not HF_TOKEN:
-    raise ValueError("Hugging Face API token is missing!")
+    raise ValueError("HF_TOKEN environment variable is not set")
 
-repo_id = "tiiuae/falcon-7b-instruct"
-llm = HuggingFaceEndpoint(
-    repo_id=repo_id,
-    token=HF_TOKEN,
-    max_length=800,  # Explicit parameter
-    temperature=0.7  # Explicit parameter
-)
+# Initialize LLM with error handling
+def init_llm():
+    try:
+        return HuggingFaceEndpoint(
+            repo_id="tiiuae/falcon-7b-instruct",
+            token=HF_TOKEN,
+            max_length=800,
+            temperature=0.7
+        )
+    except Exception as e:
+        print(f"Error initializing LLM: {e}")
+        return None
+
+llm = init_llm()
 
 @app.route("/")
 def index():
