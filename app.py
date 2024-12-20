@@ -19,7 +19,7 @@ def init_llm():
         return HuggingFaceEndpoint(
             repo_id="tiiuae/falcon-7b-instruct",
             token=HF_TOKEN,
-            max_length=800,
+            max_length=1000,
             temperature=0.7
         )
     except Exception as e:
@@ -34,65 +34,115 @@ def index():
 
 @app.route("/generate-itinerary", methods=["POST"])
 def generate_itinerary():
-    data = request.json
-    location = data.get("location")
-    start_date = data.get("startDate")
-    end_date = data.get("endDate")
-    travel_type = data.get("travelType")
-
-    # Validate inputs
-    if not location or not start_date or not end_date or not travel_type:
-        return jsonify({"error": "Missing required fields"}), 400
-
-    # Calculate the number of days for the trip
     try:
+        data = request.json
+        location = data.get("location")
+        start_date = data.get("startDate")
+        end_date = data.get("endDate")
+        travel_type = data.get("travelType")
+
+        # Validate inputs
+        if not all([location, start_date, end_date, travel_type]):
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Parse dates
         start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
         end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
-        trip_duration = (end_date_obj - start_date_obj).days + 1  # Include both start and end dates
+        trip_duration = (end_date_obj - start_date_obj).days + 1
 
         if trip_duration <= 0:
             return jsonify({"error": "End date must be after start date"}), 400
-    except ValueError:
-        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
 
-    # Generate a query for the LLM
-    query = (
-        f"Generate a detailed {trip_duration}-day itinerary for a {travel_type} trip to {location} in a paragraph format for each day. "
-        f"from {start_date} to {end_date}. Include daily activities and famous travel spots, in an explained paragraph"
-    )
+        # Simplified query with clear formatting instructions
+        query = (
+            f"Generate a detailed {trip_duration}-day itinerary for a {travel_type} trip to {location} in a paragraph format for each day. "
+            f"from {start_date} to {end_date}. Include daily activities and famous travel spots, in an explained paragraph"
 
-    try:
-        # Call the LLM and get the response
-        start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
-        end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
-        num_days = (end_date_obj - start_date_obj).days + 1
+        )
 
-        query = f"Generate a detailed {num_days}-day itinerary for {travel_type} in {location} from {start_date} to {end_date}."
-        itinerary = llm.invoke(query)
-        itinerary = llm.invoke(query)
-        days = itinerary.split("Day")  # Split by the keyword "Day" to identify each day's content
-
-        formatted_itinerary = ""
-        for i, day in enumerate(days):
-            if i == 0:
-                continue  # Skip the first part as it doesn't have "Day"
+        # Get LLM response with specific parameters
+        itinerary = llm.invoke(query, max_length=1000, temperature=0.7)
+        
+        # Process the response
+        formatted_itinerary = "<div class='itinerary-container'>"
+        
+        # Split into days
+        days = itinerary.split("Day")
+        
+        for i in range(1, trip_duration + 1):
+            current_date = start_date_obj + timedelta(days=i-1)
+            formatted_date = current_date.strftime("%B %d, %Y")
             
-            # Rebuild the header for each day
-            day_header = day.split(":")[0].strip()  # e.g., "1, 04 Dec, 2024"
-            activities = day.split(":")[1].strip() if len(day.split(":")) > 1 else ""  # Get the activities for that day
+            # Find the corresponding day content
+            day_content = ""
+            for day in days:
+                if day.strip().startswith(str(i)):
+                    day_content = day.split(":", 1)[1].strip() if ":" in day else day.strip()
+                    break
             
-            # Replace newlines in the activities with <p> tags to create separate paragraphs
-            activities_paragraphs = activities.split('\n')
-            formatted_activities = ''.join([f"<p>{activity.strip()}</p>" for activity in activities_paragraphs if activity.strip()])
-            
-            # Format the output: Bold the day header and ensure activities appear below as separate paragraphs
-            formatted_itinerary += f"<b>Day {day_header}:</b><br>{formatted_activities}<br>"
+            # Format day container
+            formatted_itinerary += f"""
+                <div class='day-container'>
+                    <h2 class='day-header'>Day {i}</h2>
+                    <h3 class='date-header'>{formatted_date}</h3>
+                    <div class='day-content'>
+                        <p class='activity'>{day_content}</p>
+                    </div>
+                </div>
+            """
 
-        return jsonify({"itinerary": formatted_itinerary})# Return the formatted itinerary as a JSON response
+        formatted_itinerary += "</div>"
+
+        # CSS styling
+        css_styles = """
+            <style>
+                .itinerary-container {
+                    font-family: Arial, sans-serif;
+                    max-width: 800px;
+                    margin: 20px auto;
+                    padding: 20px;
+                }
+                .day-container {
+                    margin-bottom: 30px;
+                    padding: 20px;
+                    border-radius: 8px;
+                    background-color: #f9f9f9;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+                .day-header {
+                    color: #2c3e50;
+                    font-size: 24px;
+                    margin: 0;
+                    padding-bottom: 5px;
+                    border-bottom: 2px solid #3498db;
+                }
+                .date-header {
+                    color: #7f8c8d;
+                    font-size: 18px;
+                    margin: 10px 0;
+                    font-weight: normal;
+                }
+                .day-content {
+                    margin-top: 15px;
+                }
+                .activity {
+                    margin: 10px 0;
+                    line-height: 1.6;
+                    color: #34495e;
+                }
+            </style>
+        """
+
+        final_output = css_styles + formatted_itinerary
+        
+        return jsonify({"itinerary": final_output})
 
     except Exception as e:
-        return jsonify({"error": f"Error generating itinerary: {str(e)}"}), 500
-
+        print(f"Error generating itinerary: {str(e)}")
+        return jsonify({
+            "error": "Error generating itinerary",
+            "details": str(e)
+        }), 500
 
 if __name__ == "__main__":
     app.run(debug=False, host='0.0.0.0')
